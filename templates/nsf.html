@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+NSF
+{% endblock %}
+
+{% block getJSON %}
+<script type="text/javascript">
+var json = "{{ nsfjson|escapejs }}"
+</script>
+{% endblock %}
+
+{% block content %}
+Welcome to the National Science Foundation
+{% endblock %}
+
+{% block homelink %}
+<a href="http://128.117.80.128:8000/">Home</a>
+{% endblock %}
+
+{% block nsflink %}
+{% endblock %}

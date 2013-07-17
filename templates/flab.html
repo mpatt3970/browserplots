@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+FLAB
+{% endblock %}
+
+{% block getJSON %}
+<script type="text/javascript">
+var json = "{{ fjson|escapejs }}"
+</script>
+{% endblock %}
+
+{% block content %}
+Welcome to the Foothills
+{% endblock %}
+
+{% block homelink %}
+<a href="http://128.117.80.128:8000/">Home</a>
+{% endblock %}
+
+{% block flink %}
+{% endblock %}
