@@ -10,13 +10,17 @@ var json = "{{ nwscjson|escapejs }}"
 </script>
 {% endblock %}
 
-{% block content %}
-Welcome to the Super Computer
+{% block city %}
+Cheyenne
 {% endblock %}
 
-{% block homelink %}
-<a href="http://128.117.80.128:8000/">Home</a>
+{% block lab %}
+NWSC
 {% endblock %}
 
 {% block nwsclink %}
+{% endblock %}
+
+{% block extralinks %}
+<a href="http://www.eol.ucar.edu/weather/weather_fl/elsewhere.html" rel="external">Other Links</a>
 {% endblock %}

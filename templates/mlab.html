@@ -10,13 +10,19 @@ var json = "{{ mjson|escapejs }}"
 </script>
 {% endblock %}
 
-{% block content %}
-Welcome to the Mesa Lab
+{% block city %}
+Boulder
 {% endblock %}
 
-{% block homelink %}
-<a href="http://128.117.80.128:8000/">Home</a>
+{% block lab %}
+Mesa Lab
 {% endblock %}
 
 {% block mlink %}
+{% endblock %}
+
+{% block extralinks %}
+<a href="http://www.eol.ucar.edu/weather/weather_ml/station.html" rel="external">ML Weather Station Info</a>
+<a href="http://www.eol.ucar.edu/weather/weather_fl/elsewhere.html" rel="external">Other Links</a>
+<a href="http://www.eol.ucar.edu/weather/weather_ml/disclaimer.html" rel="external">Disclaimer</a>
 {% endblock %}

@@ -1,0 +1,40 @@
+.container {
+	width: 80%;
+	background-color: #B3C7DB;
+	margin: 0 auto;
+}
+.clear {
+	clear:both;
+}
+.chart {
+	width: 90%;
+	border-style: solid;
+	border-right: none;
+	border-left: none;
+	border-width: 3px;
+	margin: 0 auto;
+}
+
+#header {
+	width: 100%;
+	background-color: #06C;
+}
+
+#logo {
+	width: 100%;
+}
+
+#title {
+	color: white;
+	font-size: 200%;
+	text-align: center;
+}
+
+#nav-bar {
+	width: 100%;
+	background-color: #06C;
+}
+
+a {
+	background-color: white;
+}
