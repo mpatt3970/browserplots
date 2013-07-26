@@ -10,10 +10,9 @@ from django.http import HttpResponse
 #const variables
 NUM_POINTS = 288
 TO_ROUND = 4
-TO_IGNORE = ['base_time', 'samp_secs', 'lat', 'lon', 'alt', 'station', 'time_offset']
-VARIABLE_KEYS = ['tdry', 'rh', 'pres', 'cpres0', 'dp', 'wdir', 'wspd', 'wmax', 'wsdev', 'wchill', 'raina', 'raina24', 'bat']
+VARIABLE_KEYS = ['tdry', 'rh', 'cpres0', 'dp', 'wdir', 'wspd', 'wmax', 'raina']
 NAME_MAP = ['Temperature', 'Relative Humidity', 'Pressure corrected to Sea Level', 'Dew Point', 'Wind Direction', 'Wind Speed', 'Peak Gust', 'Rain']
-UNIT_MAP = []
+UNIT_MAP = ['C', '%', 'hPa', 'Celsius', 'degrees', 'meters/second', 'meters/second', 'millimeters' ]
 
 def homePage(request):
 	return render(request, 'base.html')
@@ -73,11 +72,11 @@ def getAjaxTime(current, lab_name):
 
 def getAjaxData(current, lab_name):
 	h = {}
-	for x in VARIABLE_KEYS:
+	for i, x in enumerate(VARIABLE_KEYS):
 		temp = current.variables[x][:]
 		l = temp.size - 1
 		item = temp[l]
-		h[x] = round(item, TO_ROUND)
+		h[NAME_MAP[i]] = round(item, TO_ROUND)
 	return h
 
 def getData(lab_name):
@@ -102,9 +101,9 @@ def getData(lab_name):
 	time_list = getTime(current_data, last_data, last_length, full_size, lab_name)
 	holder = {'time' : time_list}
 	#get the variables from the list and add to the holder dictionary
-	for x in VARIABLE_KEYS:
+	for i, x in enumerate(VARIABLE_KEYS):
 		a_list = getVariable(x, current_data, last_data, last_length, full_size)
-		holder[x] = a_list
+		holder[NAME_MAP[i]] = a_list
 	#close the files
 	current_data.close()
 	last_data.close()

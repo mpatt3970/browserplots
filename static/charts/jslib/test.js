@@ -49,23 +49,27 @@ function initialize(object) {
     selected = [],
     charts = [],
     time = object['time'];
+    //hold up this could be handled on the Python side
     var $o = $('#optionsContainer'),
     $c = $('#chartContainer');
     $o.append('<fieldset data-role="controlgroup" id="field">');
+    var count = 0;
     for (var key in object) {
-        if (key != 'time' && key != 'pres' && key != 'bat' && key != 'wsdev' && key != 'wchill' && key != 'raina24') {
+        if (key != 'time') {
+            selected.push(true);
             options.push(key);
             data.push(object[key]);
-            $o.append('<label><input type="checkbox" name="checkbox-' + key + '" class="checkbox" checked>' + key + '</label>');
+            $o.append('<label><input type="checkbox" name="checkbox-' + count + '" class="checkbox" checked>' + key + '</label>');
+            count++;
         }
     }
     $o.append('</fieldset>');
     $("input[type='checkbox']").checkboxradio();
     for (var i = 0; i < data.length; i++) {
         $c.append('<div id="' + options[i] + '" class="chart"></div>');
+        console.log(options[i]);
         charts.push(makeChart(options[i], data[i], time));
     }
-    selected = options;
     array_of_arrays = [data, options, selected, charts, time];
     return array_of_arrays;
 }
@@ -123,11 +127,37 @@ function updateCharts(recent, array_of_arrays) {
         var name = array_of_arrays[1][i];
         array_of_arrays[0][i].push(recent[name]);
         array_of_arrays[0][i].shift();
-        var chart_data = []
-        for (var j = 0; j < array_of_arrays[0][i].length; j++) {
-            chart_data.push([array_of_arrays[4][j]*1000, array_of_arrays[0][i][j]])
+        if (array_of_arrays[2][i]) {
+            var chart_data = [];
+            for (var j = 0; j < array_of_arrays[0][i].length; j++) {
+                chart_data.push([array_of_arrays[4][j]*1000, array_of_arrays[0][i][j]])
+            }
+            array_of_arrays[3][i].series[0].setData(chart_data);
         }
-        array_of_arrays[3][i].series[0].setData(chart_data);
+    }
+    return array_of_arrays;
+}
+
+function updateSelections(array_of_arrays) {
+    for (var i = 0; i < array_of_arrays[1].length; i++) {
+        if ($('input[name=checkbox-' + i +']').prop("checked")) {
+            if (!array_of_arrays[2][i]) {
+                //the cheeckbox is now selected but previously was not
+                //add a chart
+                $('#' + array_of_arrays[1][i]).show();
+                array_of_arrays[3][i] = (makeChart(array_of_arrays[1][i], array_of_arrays[0][i], array_of_arrays[4]));
+                array_of_arrays[2][i] = true;
+            }
+        } else {
+            if (array_of_arrays[2][i]) {
+                //the checkbox is no longer selected but previously was selected
+                //remove and clear the chart
+                array_of_arrays[3][i].destroy();
+                $('#' + array_of_arrays[1][i]).hide();
+                array_of_arrays[2][i] = false;
+                console.log(array_of_arrays[1][i]);
+            }
+        }
     }
     return array_of_arrays;
 }
@@ -136,7 +166,7 @@ $('document').ready( function() {
 	var obj = jQuery.parseJSON(json);
     var the_array = initialize(obj);
     the_array = ajaxCall(the_array);
+    $('input:checkbox').change( function() {
+        the_array = updateSelections(the_array);
+    });
 });
-
-
-

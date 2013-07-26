@@ -15,6 +15,9 @@
 	margin: 0 auto;
 }
 
+.checkbox {
+}
+
 #header {
 	width: 100%;
 	background-color: #06C;
@@ -25,6 +28,7 @@
 }
 
 #title {
+	width: 100%;
 	color: white;
 	font-size: 200%;
 	text-align: center;
@@ -36,5 +40,6 @@
 }
 
 a {
-	background-color: white;
+	background-color: #DDD;
+	border-style: #06C;
 }
