@@ -23,27 +23,27 @@ else:
 	'''populate arrays from netcdf'''
 
 def homePage(request):
-	return render(request, 'base.html')
+	return render(request, 'base.html', {'chart_divs': VARIABLE_KEYS})
 
 def flab(request):
 	fjson = getData('flab')
 	attributes = getAttributes()
-	return render(request, 'flab.html', {'fjson': fjson, 'attr': attributes, 'timeout': CALL_TIMEOUT})
+	return render(request, 'flab.html', {'fjson': fjson, 'attr': attributes, 'timeout': CALL_TIMEOUT, 'chart_divs': VARIABLE_KEYS})
 
 def mlab(request):
 	mjson = getData('mlab')
 	attributes = getAttributes()
-	return render(request, 'mlab.html', {'mjson': mjson, 'attr': attributes, 'timeout': CALL_TIMEOUT})
+	return render(request, 'mlab.html', {'mjson': mjson, 'attr': attributes, 'timeout': CALL_TIMEOUT, 'chart_divs': VARIABLE_KEYS})
 
 def nsf(request):
 	nsfjson = getData('nsf')
 	attributes = getAttributes()
-	return render(request, 'nsf.html', {'nsfjson': nsfjson, 'attr': attributes, 'timeout': CALL_TIMEOUT})
+	return render(request, 'nsf.html', {'nsfjson': nsfjson, 'attr': attributes, 'timeout': CALL_TIMEOUT, 'chart_divs': VARIABLE_KEYS})
 
 def nwsc(request):
 	nwscjson = getData('nwsc')
 	attributes = getAttributes()
-	return render(request, 'nwsc.html', {'nwscjson': nwscjson, 'attr': attributes, 'timeout': CALL_TIMEOUT})
+	return render(request, 'nwsc.html', {'nwscjson': nwscjson, 'attr': attributes, 'timeout': CALL_TIMEOUT, 'chart_divs': VARIABLE_KEYS})
 
 def ajax(request):
 	'''
