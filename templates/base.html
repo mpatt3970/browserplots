@@ -18,6 +18,9 @@
 	<script type="text/javascript" src="{{ STATIC_URL }}charts/jslib/test.js"></script>
 </head>
 <body>
+	{% for o in array %}
+	<p> o </p>
+	{% endfor %}
 	<div class="container">
 		{% csrf_token %}
 		{% block header %}
@@ -28,26 +31,32 @@
 		</div>
 		{% endblock %}
 		{% block nav-bar %}
-		<div id="nav-bar">
+		<ul id="nav-bar">
 			{% block flink %}
-			<a href="http://128.117.80.128:8000/flab/" rel="external">Foothills Lab</a>
+			<li><a href="/flab/" rel="external">Foothills Lab</a></li>
 			{% endblock %}
 			{% block mlink %}
-			<a href="http://128.117.80.128:8000/mlab/" rel="external">Mesa Lab</a>
+			<li><a href="/mlab/" rel="external">Mesa Lab</a></li>
 			{% endblock %}
 			{% block nsflink %}
 			<!-- The NSF files have multiple entries per point
 			<a href="http://128.117.80.128:8000/nsf/" rel="external">NSF</a> -->
 			{% endblock %}
 			{% block nwsclink %}
-			<a href="http://128.117.80.128:8000/nwsc/" rel="external">Super Computer</a>
+			<li><a href="/nwsc/" rel="external">Super Computer</a></li>
 			{% endblock %}
 			{% block extralinks %}
 			{% endblock %}
-		</div>
+		</ul>
 		{% endblock %}
 		{% block options %}
 		<div id="optionsContainer"></div>
+		{% endblock %}
+		{% block convert_button %}
+		<select name="convert" id="convert">
+			<option>Metric</option>
+			<option>English</option>
+		</select>
 		{% endblock %}
 		{% block charts %}
 		<div id="chartContainer"></div>

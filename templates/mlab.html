@@ -6,7 +6,9 @@ MLAB
 
 {% block getJSON %}
 <script type="text/javascript">
-var json = "{{ mjson|escapejs }}"
+var json = "{{ mjson|escapejs }}";
+var attributes = "{{ attr|escapejs }}";
+var timeout_length = "{{ timeout|escapejs }}";
 </script>
 {% endblock %}
 
@@ -22,7 +24,7 @@ Mesa Lab
 {% endblock %}
 
 {% block extralinks %}
-<a href="http://www.eol.ucar.edu/weather/weather_ml/station.html" rel="external">ML Weather Station Info</a>
-<a href="http://www.eol.ucar.edu/weather/weather_fl/elsewhere.html" rel="external">Other Links</a>
-<a href="http://www.eol.ucar.edu/weather/weather_ml/disclaimer.html" rel="external">Disclaimer</a>
+<li><a href="http://www.eol.ucar.edu/weather/weather_ml/station.html" rel="external">ML Weather Station Info</a></li>
+<li><a href="http://www.eol.ucar.edu/weather/weather_fl/elsewhere.html" rel="external">Other Links</a></li>
+<li><a href="http://www.eol.ucar.edu/weather/weather_ml/disclaimer.html" rel="external">Disclaimer</a></li>
 {% endblock %}

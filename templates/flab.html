@@ -6,7 +6,9 @@ FLAB
 
 {% block getJSON %}
 <script type="text/javascript">
-var json = "{{ fjson|escapejs }}"
+var json = "{{ fjson|escapejs }}";
+var attributes = "{{ attr|escapejs }}";
+var timeout_length = "{{ timeout|escapejs }}";
 </script>
 {% endblock %}
 
@@ -22,8 +24,8 @@ Foothills Lab
 {% endblock %}
 
 {% block extralinks %}
-<a href="http://www.eol.ucar.edu/webcam/FL_webcam_current.html" rel="external">FL WebCam</a>
-<a href="http://www.eol.ucar.edu/weather/weather_fl/station.html" rel="external">FL Weather Station Info</a>
-<a href="http://www.eol.ucar.edu/weather/weather_fl/elsewhere.html" rel="external">Other Links</a>
-<a href="http://www.eol.ucar.edu/weather/weather_fl/disclaimer.html" rel="external">Disclaimer</a>
+<li><a href="http://www.eol.ucar.edu/webcam/FL_webcam_current.html" rel="external">FL WebCam</a></li>
+<li><a href="http://www.eol.ucar.edu/weather/weather_fl/station.html" rel="external">FL Weather Station Info</a></li>
+<li><a href="http://www.eol.ucar.edu/weather/weather_fl/elsewhere.html" rel="external">Other Links</a></li>
+<li><a href="http://www.eol.ucar.edu/weather/weather_fl/disclaimer.html" rel="external">Disclaimer</a></li>
 {% endblock %}

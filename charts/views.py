@@ -1,39 +1,57 @@
 from django.shortcuts import render
-from numpy import *
-from netCDF4 import *
-from datetime import date, timedelta
+from numpy import array
+from netCDF4 import Dataset
+from datetime import date, timedelta, datetime
+import time
 from pytz import timezone
 import simplejson as json
-import time
 from django.http import HttpResponse
+import charts.constants
 
 #const variables
-NUM_POINTS = 288
-TO_ROUND = 4
-VARIABLE_KEYS = ['tdry', 'rh', 'cpres0', 'dp', 'wdir', 'wspd', 'wmax', 'raina']
-NAME_MAP = ['Temperature', 'Relative Humidity', 'Pressure corrected to Sea Level', 'Dew Point', 'Wind Direction', 'Wind Speed', 'Peak Gust', 'Rain']
-UNIT_MAP = ['C', '%', 'hPa', 'Celsius', 'degrees', 'meters/second', 'meters/second', 'millimeters' ]
+CALL_TIMEOUT = charts.constants.CALL_TIMEOUT
+NUM_POINTS = charts.constants.NUM_POINTS
+TO_ROUND = charts.constants.TO_ROUND
+FILE_PATH = charts.constants.FILE_PATH
+if not charts.constants.DEFAULT:
+	VARIABLE_KEYS = charts.constants.VARIABLE_KEYS
+	NAME_MAP = charts.constants.NAME_MAP
+	M_UNIT_MAP = charts.constants.M_UNIT_MAP
+	E_UNIT_MAP = charts.constants.E_UNIT_MAP
+	PLOT_MAP = charts.constants.PLOT_MAP
+else:
+	'''populate arrays from netcdf'''
 
 def homePage(request):
 	return render(request, 'base.html')
 
 def flab(request):
 	fjson = getData('flab')
-	return render(request, 'flab.html', {'fjson': fjson})
+	attributes = getAttributes()
+	return render(request, 'flab.html', {'fjson': fjson, 'attr': attributes, 'timeout': CALL_TIMEOUT})
 
 def mlab(request):
 	mjson = getData('mlab')
-	return render(request, 'mlab.html', {'mjson': mjson})
+	attributes = getAttributes()
+	return render(request, 'mlab.html', {'mjson': mjson, 'attr': attributes, 'timeout': CALL_TIMEOUT})
 
 def nsf(request):
 	nsfjson = getData('nsf')
-	return render(request, 'nsf.html', {'nsfjson': nsfjson})
+	attributes = getAttributes()
+	return render(request, 'nsf.html', {'nsfjson': nsfjson, 'attr': attributes, 'timeout': CALL_TIMEOUT})
 
 def nwsc(request):
 	nwscjson = getData('nwsc')
-	return render(request, 'nwsc.html', {'nwscjson': nwscjson})
+	attributes = getAttributes()
+	return render(request, 'nwsc.html', {'nwscjson': nwscjson, 'attr': attributes, 'timeout': CALL_TIMEOUT})
 
 def ajax(request):
+	'''
+	called when an ajax request is sent from a client
+	checks if time is different
+	if it is, sends new data
+	otherwise, sends a message saying it is the same
+	'''
 	client_name = request.POST['name']
 	client_time = int(request.POST['recentTime'])
 	current_data = openFile(client_name, 0)
@@ -58,6 +76,9 @@ def ajax(request):
 	return HttpResponse(response)
 
 def getAjaxTime(current, lab_name):
+	'''
+	returns the most recent time value
+	'''
 	current = openFile(lab_name, 0)
 	btime = current.variables['base_time'].getValue()
 	time = current.variables['time_offset'][:]
@@ -71,12 +92,16 @@ def getAjaxTime(current, lab_name):
 	return int(time[l] + btime + offset)
 
 def getAjaxData(current, lab_name):
+	'''
+	returns a dictionary with the most recent data 
+	and uses variable names for keys
+	'''
 	h = {}
 	for i, x in enumerate(VARIABLE_KEYS):
 		temp = current.variables[x][:]
 		l = temp.size - 1
 		item = temp[l]
-		h[NAME_MAP[i]] = round(item, TO_ROUND)
+		h[x] = round(item, TO_ROUND)
 	return h
 
 def getData(lab_name):
@@ -103,7 +128,7 @@ def getData(lab_name):
 	#get the variables from the list and add to the holder dictionary
 	for i, x in enumerate(VARIABLE_KEYS):
 		a_list = getVariable(x, current_data, last_data, last_length, full_size)
-		holder[NAME_MAP[i]] = a_list
+		holder[x] = a_list
 	#close the files
 	current_data.close()
 	last_data.close()
@@ -123,7 +148,7 @@ def openFile(name, days_ago):
 	#make the date into a formatted string
 	date_string = str(the_date.year) + str(the_date.month).zfill(2) + str(the_date.day).zfill(2)
 	#use the name of the lab and the date_string to get the proper file
-	filename = '/net/www/weather/' + name + '/data/' + name + '.' + date_string + '.cdf'
+	filename = FILE_PATH + name + '/data/' + name + '.' + date_string + '.cdf'
 	#open the file and store it in data
 	data = Dataset(filename)
 	return data
@@ -189,3 +214,10 @@ def getVariable(key, current, last, length, full):
  	for a in temp:
  		the_list.append(round(a, TO_ROUND))
  	return the_list
+
+def getAttributes():
+	holder = {}
+	for i, x in enumerate(VARIABLE_KEYS):
+		holder[x] = [x, NAME_MAP[i], M_UNIT_MAP[i], E_UNIT_MAP[i], PLOT_MAP[i]]
+	a = json.dumps(holder)
+	return a

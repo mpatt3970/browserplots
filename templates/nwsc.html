@@ -6,7 +6,9 @@ NWSC
 
 {% block getJSON %}
 <script type="text/javascript">
-var json = "{{ nwscjson|escapejs }}"
+var json = "{{ nwscjson|escapejs }}";
+var attributes = "{{ attr|escapejs }}";
+var timeout_length = "{{ timeout|escapejs }}";
 </script>
 {% endblock %}
 
@@ -22,5 +24,5 @@ NWSC
 {% endblock %}
 
 {% block extralinks %}
-<a href="http://www.eol.ucar.edu/weather/weather_fl/elsewhere.html" rel="external">Other Links</a>
+<li><a href="http://www.eol.ucar.edu/weather/weather_fl/elsewhere.html" rel="external">Other Links</a></li>
 {% endblock %}
