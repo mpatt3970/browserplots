@@ -5,7 +5,7 @@ from datetime import date, timedelta, datetime
 import time
 from pytz import timezone
 import simplejson as json
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 import charts.constants
 
 #const variables
@@ -22,28 +22,48 @@ if not charts.constants.DEFAULT:
 else:
 	'''populate arrays from netcdf'''
 
+
+'''these first five functions are the page views
+the Variables are set, the correct template file is called, and these are sent to the client'''
+
 def homePage(request):
 	return render(request, 'base.html', {'chart_divs': VARIABLE_KEYS})
 
 def flab(request):
 	fjson = getData('flab')
 	attributes = getAttributes()
-	return render(request, 'flab.html', {'fjson': fjson, 'attr': attributes, 'timeout': CALL_TIMEOUT, 'chart_divs': VARIABLE_KEYS})
+	if 'flab' in request.session:
+		cookie = request.session['flab']
+	else:
+		cookie = 'empty'
+	return render(request, 'flab.html', {'fjson': fjson, 'attr': attributes, 'timeout': CALL_TIMEOUT, 'chart_divs': VARIABLE_KEYS, 'cookie': cookie})
 
 def mlab(request):
 	mjson = getData('mlab')
 	attributes = getAttributes()
-	return render(request, 'mlab.html', {'mjson': mjson, 'attr': attributes, 'timeout': CALL_TIMEOUT, 'chart_divs': VARIABLE_KEYS})
+	if 'mlab' in request.session:
+		cookie = request.session['mlab']
+	else:
+		cookie = 'empty'
+	return render(request, 'mlab.html', {'mjson': mjson, 'attr': attributes, 'timeout': CALL_TIMEOUT, 'chart_divs': VARIABLE_KEYS, 'cookie': cookie})
 
 def nsf(request):
 	nsfjson = getData('nsf')
 	attributes = getAttributes()
-	return render(request, 'nsf.html', {'nsfjson': nsfjson, 'attr': attributes, 'timeout': CALL_TIMEOUT, 'chart_divs': VARIABLE_KEYS})
+	if 'nsf' in request.session:
+		cookie = request.session['nsf']
+	else:
+		cookie = 'empty'
+	return render(request, 'nsf.html', {'nsfjson': nsfjson, 'attr': attributes, 'timeout': CALL_TIMEOUT, 'chart_divs': VARIABLE_KEYS, 'cookie': cookie})
 
 def nwsc(request):
 	nwscjson = getData('nwsc')
 	attributes = getAttributes()
-	return render(request, 'nwsc.html', {'nwscjson': nwscjson, 'attr': attributes, 'timeout': CALL_TIMEOUT, 'chart_divs': VARIABLE_KEYS})
+	if 'nwsc' in request.session:
+		cookie = request.session['nwsc']
+	else:
+		cookie = 'empty'
+	return render(request, 'nwsc.html', {'nwscjson': nwscjson, 'attr': attributes, 'timeout': CALL_TIMEOUT, 'chart_divs': VARIABLE_KEYS, 'cookie': cookie})
 
 def ajax(request):
 	'''
@@ -221,3 +241,27 @@ def getAttributes():
 		holder[x] = [x, NAME_MAP[i], M_UNIT_MAP[i], E_UNIT_MAP[i], PLOT_MAP[i]]
 	a = json.dumps(holder)
 	return a
+
+'''This sets the cookie based on the labname so each site has its own cookie value
+the format of the cookies is metric/true/variable_name/true/variable_name/false'''
+
+def updateCookie(request):
+	if request.method != 'POST':
+		raise Http404('Only POSTs are allowed')
+	else:
+		n = request.POST['name']
+		if (n == 'flab'):
+			request.session['flab'] = request.POST['selections']
+			response = request.session['flab']
+		elif (n == 'mlab'):
+			request.session['mlab'] = request.POST['selections']
+			response = request.session['mlab']
+		elif (n == 'nsf'):
+			request.session['nsf'] = request.POST['selections']
+			response = request.session['nsf']
+		elif (n == 'nwsc'):
+			request.session['nwsc'] = request.POST['selections']
+			response = request.session['nwsc']
+		else:
+			response = 'whats your name'
+	return HttpResponse(response)

@@ -11,4 +11,8 @@ urlpatterns = patterns('charts.views',
     (r'^nsf/$', 'nsf'),
     (r'^nwsc/$', 'nwsc'),
     (r'^ajax/$', 'ajax'),
+    (r'^updateCookie/$', 'updateCookie'),
+    (r'^cookie/$', 'cookieHTML'),
+    (r'^cookieAjax/$', 'setCookie'),
+    (r'^other/$', 'otherCookieSite'),
 )

@@ -96,7 +96,7 @@ function makeChart(attr, data, time) {
     return chart;
 }
 
-function initialize(object, attr) {
+function initialize(object, attr, cookie) {
     /*
     this function receives both json objects as parameters
     object contains the data
@@ -105,7 +105,7 @@ function initialize(object, attr) {
     and maintains the same index for each variable across the arrays
     then returns a master array containing all the other arrays
     */
-
+    prechosen = parseCookie(cookie);
     //instead of a mess of nested arrays could define an object to hold this stuff for each variable and store the objects in a single array
 
     var array_of_arrays = [], //the master array to hold the other array
@@ -147,7 +147,6 @@ function initialize(object, attr) {
                     plots_to_add.push(other_key);
                 }
             }
-            i
             //if there are some paired plots, change the to_adds from default values into arrays with the default value as the first element
             //so that more values can be pushed onto them
             if (plots_to_add.length > 0) {
@@ -162,9 +161,16 @@ function initialize(object, attr) {
                 label = label + ' and ' + attr[plots_to_add[j]][1];
             }
             data.push(data_to_add);
-            selected.push(false);
+            if (prechosen[key]) {
+                console.log(key + " was chosen");
+                selected.push(true);
+                $o.append('<input type="checkbox" name="checkbox-' + count + '" id="checkbox-' + count + '" checked/>');
+            } else {
+                console.log(key + " was NOT chosen");
+                selected.push(false);
+                $o.append('<input type="checkbox" name="checkbox-' + count + '" id="checkbox-' + count + '"/>');
+            }
             attributes.push(attr_to_add);
-            $o.append('<input type="checkbox" name="checkbox-' + count + '" id="checkbox-' + count + '"/>');
             $o.append('<label for="checkbox-' + count + '" data-inline="true">' + label + '</label>');
             count++;
         }
@@ -172,25 +178,68 @@ function initialize(object, attr) {
     $o.append('</fieldset></form>');
     $("input[type='checkbox']").checkboxradio();
     array_of_arrays = [data, attributes, selected, charts, time];
+    for (var i = 0; i < array_of_arrays[0].length; i++) {
+        if (array_of_arrays[2][i]) {
+            if (array_of_arrays[0][i][0][0]) {
+                var id = array_of_arrays[1][i][0][0];
+            } else {
+                var id = array_of_arrays[1][i][0];
+            }
+            $('#chartContainer').prepend('<div id="' + id + '" class="chart"></div>')
+            if (metric) {
+                array_of_arrays[3][i] = makeChart(array_of_arrays[1][i], array_of_arrays[0][i], array_of_arrays[4]);
+            }
+        }
+    }
+    if (!metric) {
+        array_of_arrays = convert_to_english(array_of_arrays);
+    }
     return array_of_arrays;
 }
 
+function parseCookie(cookie) {
+    var selected_objects = {};
+    if (cookie == "empty") {
+        return '';
+    } else {
+        var cookie_array = cookie.split("/");
+        for (var i = 0; i < cookie_array.length; i += 2) {
+            console.log(cookie_array[i] + " is " + cookie_array[i+1]);
+            if (cookie_array[i] == 'metric') {
+                metric = stringToBool(cookie_array[i + 1]);
+                if (!metric) {
+                    $('#convert').val("English");
+                    $('select').selectmenu('refresh', true);
+                } else {
+                    $('#convert').val("Metric");
+                    $('select').selectmenu('refresh', true);
+                }
+            } else {
+                selected_objects[cookie_array[i]] = stringToBool(cookie_array[i + 1]);
+            }
+        }
+    }
+    return selected_objects;
+}
+
+function stringToBool(the_string) {
+    if (the_string == "true") {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function ajaxCall(array_of_arrays) {
-    if(window.location.href.indexOf("flab") > -1) {
-        name = 'flab';
-    }
-    else if(window.location.href.indexOf("mlab") > -1) {
-        name = 'mlab';
-    }
-    else if(window.location.href.indexOf("nwsc") > -1) {
-        name = 'nwsc';
-    }
-    else if(window.location.href.indexOf("nsf") > -1) {
-        name = 'nsf';
-    }
-    else {
-        name = '';
-    }
+    /*This function accepts the array holder as a parameter
+    it finds out the labname by checking the url
+    it gets the most recent time value stored in the array holder
+    it sends the labname, recent time, and a token back to the server
+    if it is a success, it calls ajaxSuccess
+    and whether it succeeds or fails, it calls itself in timeout_length milliseconds
+    then it returns the holder array (modified by ajaxSuccess) to the main function
+    */
+    var name = getName();
     l = array_of_arrays[4].length -  1;
     t = array_of_arrays[4][l];
     $.ajax({
@@ -212,7 +261,28 @@ function ajaxCall(array_of_arrays) {
     return array_of_arrays;
 }
 
+function getName() {
+    var name = '';
+    if(window.location.href.indexOf("flab") > -1) {
+        name = 'flab';
+    }
+    else if(window.location.href.indexOf("mlab") > -1) {
+        name = 'mlab';
+    }
+    else if(window.location.href.indexOf("nwsc") > -1) {
+        name = 'nwsc';
+    }
+    else if(window.location.href.indexOf("nsf") > -1) {
+        name = 'nsf';
+    }
+    return name;
+}
+
 function ajaxSuccess(data, array_of_arrays) {
+    /*
+    if the data is the same, return the same holder array
+    otherwise, return the updateCharts function
+    */
     if (data.s == 'same') {
         return array_of_arrays;
     }
@@ -222,6 +292,11 @@ function ajaxSuccess(data, array_of_arrays) {
 }
 
 function convertRecent(value, e_units) {
+    /*
+    if the user has selected english units, then the new values must be converted 
+    before they can be added, this converts a single value based on what its unit is
+    then returns the converted value
+    */
     if (!metric) {
             if (e_units == 'Fahrenheit') {
                 var toAdd = Math.round(10000*(value*1.8 + 32))/10000;
@@ -245,6 +320,13 @@ function convertRecent(value, e_units) {
 }
 
 function updateCharts(recent, array_of_arrays) {
+    /*
+    This function accepts the recent values and the holder array as parameter
+    the recent values are indexed by variable shortnames
+    for each array holding info, push on the new value and shift off the oldest value
+    for the arrays chosen to be charted, destroy the old chart and make a new one
+    then return the new array
+    */
     array_of_arrays[4].push(recent.t);
     array_of_arrays[4].shift();
     for (var i = 0; i < array_of_arrays[0].length; i++) {
@@ -272,6 +354,16 @@ function updateCharts(recent, array_of_arrays) {
 }
 
 function updateSelections(array_of_arrays) {
+    /*
+    this function accepts the holder array as a parameter
+    for each option, it checks if the user selected that option
+    if it was previously selected, do nothing
+    if it wasn't previously selected, make the holder div and the chart for that option
+    and set the indicator value to true
+    if the user didn't select that option,
+    if it was previously selected, delete the div, destroy the chart, and set the indicator to false
+    then return the holder array with the indicator values updated
+    */
     for (var i = 0; i < array_of_arrays[1].length; i++) {
         if ($('input[name=checkbox-' + i +']').prop("checked")) {
             if (!array_of_arrays[2][i]) {
@@ -305,10 +397,51 @@ function updateSelections(array_of_arrays) {
             }
         }
     }
+    updateCookie(array_of_arrays);
     return array_of_arrays;
 }
 
+function updateCookie(array_of_arrays) {
+    lab_name = getName();
+    var selections = 'metric/' + metric;
+    //since it only allows strings and key values to be sent by ajax, the selected info and shortnames will be stored in a string
+    //the string format is metric/true/short_name/true/short_name/false/short_name/true/...
+    //and the key value is related to the lab_name
+    for (var i = 0; i < array_of_arrays[2].length; i++) {
+        if (array_of_arrays[0][i][0][0]) {
+            //if it is a paired div
+            //set the short name to the first element's short name
+            var short_name = array_of_arrays[1][i][0][0];
+        } else {
+            //not paired, so use normal short name
+            var short_name = array_of_arrays[1][i][0];
+        }
+        var selected = array_of_arrays[2][i];
+        selections = selections + '/' + short_name + '/' + selected
+    }
+    $.ajax({
+        type: "POST",
+        url: "/updateCookie/",
+        data: {
+            'name': lab_name,
+            'selections': selections,
+            'csrfmiddlewaretoken' : $("input[name=csrfmiddlewaretoken]").val()
+        },
+        dataType: 'json',
+        success: function(data) {
+            console.log(data);
+        }
+    });
+}
+
 function convert_to_english(array_of_arrays) {
+    /*
+    accepts the holder array as a parameter
+    this is a hardcoded conversion based on units
+    Math.round only rounds to an int so each value is multipled by 10^4 before rounding then divided by 10^4
+    this gives 4 decimal places to each value
+    return the holder array with the converted values
+    */
     for (var i = 0; i < array_of_arrays[0].length; i++) {
         if (array_of_arrays[0][i][0][0]) {
             for (var j = 0; j < array_of_arrays[0][i].length; j++) {
@@ -358,14 +491,25 @@ function convert_to_english(array_of_arrays) {
             }
         }
         if (array_of_arrays[2][i]) {
-            array_of_arrays[3][i].destroy();
+            if (array_of_arrays[3][i]) {
+                array_of_arrays[3][i].destroy();
+            }
             array_of_arrays[3][i] = (makeChart(array_of_arrays[1][i], array_of_arrays[0][i], array_of_arrays[4]));
         }
     }
+    updateCookie(array_of_arrays);
     return array_of_arrays;
 }
 
 function convert_to_metric(array_of_arrays) {
+     /*
+    accepts the holder array as a parameter
+    this is a hardcoded conversion based on units
+    Math.round only rounds to an int so each value is multipled by 10^4 before rounding then divided by 10^4
+    this gives 4 decimal places to each value
+    deal with paired variables and solo variables separately since they are indexed differently
+    return the holder array with the converted values
+    */
         for (var i = 0; i < array_of_arrays[0].length; i++) {
         if (array_of_arrays[0][i][0][0]) {
             for (var j = 0; j < array_of_arrays[0][i].length; j++) {
@@ -419,15 +563,26 @@ function convert_to_metric(array_of_arrays) {
             array_of_arrays[3][i] = (makeChart(array_of_arrays[1][i], array_of_arrays[0][i], array_of_arrays[4]));
         }
     }
+    updateCookie(array_of_arrays);
     return array_of_arrays;
 }
 
+
 //set a global variable to mark if it's metric or english units
 var metric = true;
+
+//this is the main function
 $('document').ready( function() {
+    /*
+    first it stores the json objects containing the data and attributes into variables
+    it initializes the holder array based on these json objects
+    it begins the longpolling with the ajaxCall
+    if the units are changed, it switches the global variable metric and converts the values
+    if the selected options are changed, it updates based on the new selections
+    */
 	var obj = jQuery.parseJSON(json);
     var attr = jQuery.parseJSON(attributes);
-    var the_array = initialize(obj, attr);
+    var the_array = initialize(obj, attr, presets);
     the_array = ajaxCall(the_array);
     $('#convert').change( function() {
         if (!metric) {
